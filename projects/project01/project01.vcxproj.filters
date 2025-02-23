@@ -15,16 +15,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="project01.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mathyStuff.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="mathyStuff.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

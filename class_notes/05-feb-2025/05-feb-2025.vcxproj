@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{f303caeb-472b-4495-a785-4c6ce300c6f9}</ProjectGuid>
-    <RootNamespace>practice01</RootNamespace>
+    <ProjectGuid>{bb7f5bf3-3b16-4f39-a66d-d8fb922d6251}</ProjectGuid>
+    <RootNamespace>My05feb2025</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -128,6 +128,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="mathyStuff.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="mathyStuff.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
