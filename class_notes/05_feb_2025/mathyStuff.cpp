@@ -9,3 +9,7 @@ int doubleValue(int x)
 {
     return 2 * x;
 }
+
+int Rectangle::area() {
+    return width * height;
+}
