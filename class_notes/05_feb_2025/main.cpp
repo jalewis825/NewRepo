@@ -1,6 +1,5 @@
 #include<iostream>
-#include "mathyStuff.cpp"
-
+#include "mathyStuff.h"
 
 int main() {
     std::cout << add(2, 3) << "\n";
