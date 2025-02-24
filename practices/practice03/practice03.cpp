@@ -1,7 +1,6 @@
 
 #include <iostream>
 #include <vector>
-#include <stdexcept>
 
 class MathUtils {
 public:
