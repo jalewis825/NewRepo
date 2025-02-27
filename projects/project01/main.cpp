@@ -3,6 +3,7 @@
 #include <vector>
 #include <limits>
 #include <string>
+#include <sstream>
 
 const int size = 3;
 
@@ -64,10 +65,14 @@ void makeBoard() {
 			}
 
 		}
-		std::cout << "|" << std::endl;
+
+		if (board[row][size - 1].right) {
+			std::cout << "|";
 		}
 
-	//print last row of dots & horizontal lines
+		std::cout << std::endl;
+	}
+
 	std::cout << "  ";
 	for (int col = 0; col < size; col++) {
 		std::cout << "." << (board[size-1][col].bottom ? "___" : "   ");
@@ -88,19 +93,19 @@ void makeMove(int row, int col, Direction direction) {
 		case Direction::bottom:
 			board[row][col].bottom = true;
 			if (row < size - 1) {
-				board[row - 1][col].bottom = true;
+				board[row + 1][col].top = true;
 			} 
 			break;
 		case Direction::left:
 			board[row][col].left = true;
 			if (col > 0) {
-				board[row][col].right = true;
+				board[row][col - 1].right = true;
 			}
 			break;
 		case Direction::right:
 			board[row][col].right = true;
 			if (col < size - 1) {
-				board[row][col +1].left = true;
+				board[row][col + 1].left = true;
 			}
 			break;
 	}
@@ -148,9 +153,33 @@ bool completeBox(int row, int col) {
 	return false;
 }
 
+void checkAdjacentBoxes(int row, int col, Direction direction, bool& extraTurn) {
+	if (direction == Direction::top) {
+		if (row > 0) {
+			extraTurn |= completeBox(row - 1, col);//top neighbor
+		}
+	} 
+	else if (direction == Direction::bottom) {
+		if (row < size - 1) {
+			extraTurn |= completeBox(row + 1, col);  // Bottom neighbor
+		}
+	}
+	else if (direction == Direction::left) {
+		if (col > 0) {
+			extraTurn |= completeBox(row, col - 1);  // Left neighbor
+		}
+	}
+	else if (direction == Direction::right) {
+		if (col < size - 1) {
+			extraTurn |= completeBox(row , col + 1);  // Right neighbor
+		}
+	}
+}
+
 bool gameStatus() {
 	int totalBoxes = size * size;
-	return (player1Score + player2Score) < totalBoxes;
+	int totalMoves = player1Score + player2Score;
+	return totalMoves < totalBoxes;
 }
 
 void gamePlay() {
@@ -158,45 +187,67 @@ void gamePlay() {
 	int col;
 	char directionInput;
 	bool extraTurn;
+	Direction direction = Direction::top;
 
 	while (gameStatus()) {
 		makeBoard();
 		std::cout << "Player: " << (currentPlayer == Player::X ? 'X' : 'O') << "'s turn. Enter row, column, and direction (T/B/L/R): ";
-		
-		Direction direction;
-		while (!(std::cin >> row >> col >> directionInput) || 
-			(directionInput != 'T' && directionInput != 'B' && directionInput != 'L' && directionInput != 'R' &&
-			 directionInput != 't' && directionInput != 'b' && directionInput != 'l' && directionInput != 'r')) {
-			std::cout << "Invalid move. Try again: ";
-			std::cin.clear();
-			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-		}
+	
+		while (true) {
+			std::string userInput;
+			std::getline(std::cin, userInput);
 
-		switch (directionInput) {
-		case 'T': case 't':
-			direction = Direction::top;
-			break;
-		case 'B': case 'b':
-			direction = Direction::bottom;
-			break;
-		case 'L': case 'l':
-			direction = Direction::left;
-			break;
-		case 'R': case 'r':
-			direction = Direction::right;
-			break;
-		}
+			if (userInput.empty()) {
+				std::cout << "Invalid input format. Try again (row, column, direction): ";
+				continue;
+			}
 
-		if (!isMoveValid(row -1, col - 1, direction)) {
-			std::cout << "Invalid move. Try again." << std::endl;
-			continue;
-		}
+			std::istringstream stream(userInput);
+			if (!(stream >> row >> col >> directionInput)) {
+				std::cout << "Invalid input format.Try again(row, column, direction) : "; 
+				continue;
+			}
+			
+			directionInput = std::toupper(directionInput);
 
-		makeMove(row - 1, col - 1, direction); //account for 0-based intexing of row/col
-		extraTurn = completeBox(row - 1, col - 1);
+			if (std::cin.fail() || row < 1 || row > size || col < 1 || col > size ||
+				(directionInput != 'T' && directionInput != 'B' && directionInput != 'L' && directionInput != 'R')) {
+				std::cout << "Invalid move. Try again: ";
+				std::cin.clear();
+				std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+				continue;
+			}
 
-		if (!extraTurn) {
-			currentPlayer = (currentPlayer == Player::X) ? Player::O : Player::X;
+			switch (directionInput) {
+			case 'T':
+				direction = Direction::top;
+				break;
+			case 'B':
+				direction = Direction::bottom;
+				break;
+			case 'L':
+				direction = Direction::left;
+				break;
+			case 'R':
+				direction = Direction::right;
+				break;
+			}
+
+			if (!isMoveValid(row - 1, col - 1, direction)) {
+				std::cout << "Invalid move. Try again: ";
+				continue;
+			}
+
+			makeMove(row - 1, col - 1, direction); //account for 0-based intexing of row/col
+			extraTurn = completeBox(row - 1, col - 1);
+
+			checkAdjacentBoxes(row - 1, col - 1, direction, extraTurn);
+
+			if (!extraTurn) {
+				currentPlayer = (currentPlayer == Player::X) ? Player::O : Player::X;
+			}
+
+			break;
 		}
 	}
 
@@ -215,17 +266,19 @@ void gamePlay() {
 	}
 }
 
-
 int main() {
 	printRules();
 	gamePlay();
-	
 
 	while (true) {
 		char playAgain;
-		std::cout << "Play Again? (Y/N): ";
+		std::cout << " Play Again? (Y/N): ";
 		std::cin >> playAgain;
-		if (playAgain == 'y' || playAgain == 'Y') {
+
+		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+		playAgain = std::toupper(playAgain);
+		if (playAgain == 'Y') {
 			//rest scores, board, and set first player to X
 			player1Score = 0;
 			player2Score = 0;
@@ -233,7 +286,7 @@ int main() {
 			currentPlayer = Player::X;
 			gamePlay();
 		}
-		else if (playAgain == 'n' || playAgain== 'N') {
+		else if (playAgain== 'N') {
 			std::cout << "Thanks for playing!" << std::endl;
 			return 0;
 		}
@@ -244,4 +297,6 @@ int main() {
 }
 
 /*AI: Used to help me get started with gamePlay(); I had printRules(), makeBoard(), a couple other functions, and the enums created, 
-I just needed help with a jumping off point for game play. I was struggling with the user input part of game play.*/
+I just needed help with a jumping off point for game play. I was struggling with the user input part of game play. I also needed help with
+the checkAdjacentBoxes() function. It kept crashing when I would enter bottom as a direction and I couldn't
+figure out how to fix it.*/
